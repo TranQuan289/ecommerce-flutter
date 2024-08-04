@@ -75,37 +75,37 @@ class _BottomNavigationViewState extends BaseStateDelegate<
                 items: <BottomNavigationBarItem>[
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(
-                      AssetUtils.home,
+                      AssetUtils.profile,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.primaryColor,
                         BlendMode.srcIn,
                       ),
                     ),
                     activeIcon: SvgPicture.asset(
-                      AssetUtils.homeActive,
+                      AssetUtils.profileActive,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.blueColor,
                         BlendMode.srcIn,
                       ),
                     ),
-                    label: "home",
+                    label: "account_management_view",
                   ),
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(
-                      AssetUtils.chat,
+                      AssetUtils.product,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.primaryColor,
                         BlendMode.srcIn,
                       ),
                     ),
                     activeIcon: SvgPicture.asset(
-                      AssetUtils.chatActive,
+                      AssetUtils.productActive,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.blueColor,
                         BlendMode.srcIn,
                       ),
                     ),
-                    label: "Chat",
+                    label: "product_management_view",
                   ),
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(

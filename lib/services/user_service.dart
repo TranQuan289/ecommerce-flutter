@@ -6,12 +6,12 @@ class UserService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> registerUser(UserModel user) async {
+  Future<void> registerUser(UserModel user, String password) async {
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: user.email,
-        password: user.password,
+        password: password,
       );
 
       UserModel newUser = UserModel(
@@ -19,7 +19,7 @@ class UserService {
           name: user.name,
           phone: user.phone,
           email: user.email,
-          password: user.password,
+
           dateOfBirth: user.dateOfBirth,
           role: 'member');
 
@@ -51,7 +51,6 @@ class UserService {
           name: userData['name'],
           phone: userData['phone'],
           email: userData['email'],
-          password: '',
           dateOfBirth: userData['dateOfBirth'],
           role: userData['role'],
         );
@@ -60,5 +59,38 @@ class UserService {
       throw Exception('Login failed: $e');
     }
     return null;
+  }
+    Future<List<UserModel>> fetchUsers() async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore.collection('users').get();
+      return querySnapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return UserModel(
+          id: doc.id,
+          name: data['name'],
+          phone: data['phone'],
+          email: data['email'],
+          dateOfBirth: data['dateOfBirth'],
+          role: data['role'],
+        );
+      }).toList();
+    } catch (e) {
+      throw Exception('Error fetching users: $e');
+    }
+  }
+
+  Future<void> updateUser(UserModel user) async {
+    try {
+      await _firestore.collection('users').doc(user.id).update(user.toJson());
+    } catch (e) {
+      throw Exception('Error updating user: $e');
+    }
+  }
+   String getCurrentUserId() {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      return user.uid;
+    }
+    throw Exception('No user is currently logged in.');
   }
 }

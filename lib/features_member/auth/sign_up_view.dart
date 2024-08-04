@@ -32,9 +32,8 @@ class _SignUpViewState extends State<SignUpView> {
         name: _nameController.text,
         phone: _phoneController.text,
         email: _emailController.text,
-        password: _passwordController.text,
         dateOfBirth: DateTime.now().toString(),
-        role: '',
+        role: 'member',
       );
 
       showDialog(
@@ -46,7 +45,10 @@ class _SignUpViewState extends State<SignUpView> {
       );
 
       try {
-        await _userService.registerUser(user);
+        await _userService.registerUser(
+          user,
+          _passwordController.text,
+        );
         Navigator.of(context).pop();
         Routes.goToSignInScreen(context);
       } catch (e) {

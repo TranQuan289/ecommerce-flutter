@@ -3,7 +3,6 @@ class UserModel {
   final String name;
   final String phone;
   final String email;
-  final String password;
   final String dateOfBirth;
   final String role; 
 
@@ -12,7 +11,6 @@ class UserModel {
     required this.name,
     required this.phone,
     required this.email,
-    required this.password,
     required this.dateOfBirth,
     required this.role,
   });
