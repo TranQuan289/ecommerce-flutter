@@ -17,7 +17,7 @@ class ProductService {
         'description': product.description,
         'price': product.price,
         'imageUrl': product.imageUrl,
-        'favoriteUserIds': [], // Initialize with an empty list
+        'favoriteUserIds': [], 
       });
     } catch (e) {
       throw Exception('Error creating product: $e');
@@ -57,7 +57,7 @@ class ProductService {
           price: data['price'],
           imageUrl: data['imageUrl'],
           favoriteUserIds: List<String>.from(
-              data['favoriteUserIds'] ?? []), // Use empty list if not found
+              data['favoriteUserIds'] ?? []), 
         );
       }).toList();
     } catch (e) {
@@ -65,7 +65,6 @@ class ProductService {
     }
   }
 
-  // Toggle favorite for a specific user
   Future<void> toggleFavorite(String productId, String userId) async {
     try {
       DocumentReference productRef =
@@ -76,14 +75,13 @@ class ProductService {
         List<String> favoriteUserIds =
             List<String>.from(productSnapshot['favoriteUserIds'] ?? []);
 
-        // Toggle the user's favorite status
+    
         if (favoriteUserIds.contains(userId)) {
-          favoriteUserIds.remove(userId); // Remove from favorites
+          favoriteUserIds.remove(userId); 
         } else {
-          favoriteUserIds.add(userId); // Add to favorites
+          favoriteUserIds.add(userId); 
         }
 
-        // Update the product document in Firestore
         await productRef.update({'favoriteUserIds': favoriteUserIds});
       }
     } catch (e) {
@@ -103,9 +101,11 @@ class ProductService {
       throw Exception('Error uploading image: $e');
     }
   }
+
   Future<ProductModel?> fetchProductDetails(String productId) async {
     try {
-      DocumentSnapshot doc = await _firestore.collection('products').doc(productId).get();
+      DocumentSnapshot doc =
+          await _firestore.collection('products').doc(productId).get();
       if (doc.exists) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         return ProductModel(
@@ -116,11 +116,39 @@ class ProductService {
           price: data['price'],
           imageUrl: data['imageUrl'],
           favoriteUserIds: List<String>.from(data['favoriteUserIds'] ?? []),
+          comments: Map<String, String>.from(data['comments'] ?? {}),
         );
       }
     } catch (e) {
       throw Exception('Error fetching product details: $e');
     }
-    return null; // Return null if the product does not exist
+    return null;
+  }
+
+  Future<void> addComment(
+      String productId, String userId, String comment) async {
+    try {
+      DocumentReference productRef =
+          _firestore.collection('products').doc(productId);
+
+      await _firestore.runTransaction((transaction) async {
+        DocumentSnapshot productSnapshot = await transaction.get(productRef);
+
+        if (productSnapshot.exists) {
+          Map<String, dynamic> data =
+              productSnapshot.data() as Map<String, dynamic>;
+          Map<String, String> comments =
+              Map<String, String>.from(data['comments'] ?? {});
+
+          comments[userId] = comment;
+
+          transaction.update(productRef, {'comments': comments});
+        } else {
+          throw Exception('Product not found');
+        }
+      });
+    } catch (e) {
+      throw Exception('Error adding or updating comment: $e');
+    }
   }
 }

@@ -2,11 +2,15 @@ class CartItemModel {
   final String productId;
   int quantity;
   final double price;
+  final String productName; // Add this
+  final String imageUrl;    // Add this
 
   CartItemModel({
     required this.productId,
     required this.quantity,
     required this.price,
+    required this.productName, 
+    required this.imageUrl,   
   });
 
   Map<String, dynamic> toJson() {
@@ -14,6 +18,8 @@ class CartItemModel {
       'productId': productId,
       'quantity': quantity,
       'price': price,
+      'productName': productName, 
+      'imageUrl': imageUrl,       
     };
   }
 
@@ -22,6 +28,8 @@ class CartItemModel {
       productId: json['productId'],
       quantity: json['quantity'],
       price: json['price'],
+      productName: json['productName'], 
+      imageUrl: json['imageUrl'],      
     );
   }
 }

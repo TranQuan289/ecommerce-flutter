@@ -6,7 +6,7 @@ import 'package:ecommerce_flutter/services/user_service.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 class OrderView extends HookWidget {
-    const OrderView({Key? key}) : super(key: key);
+  const OrderView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,30 +44,62 @@ class OrderView extends HookWidget {
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
-              return Card(
+              return Container(
                 margin: EdgeInsets.all(8),
-                child: ListTile(
-                  title: Text('Order #${order.id}'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Status: ${order.status}'),
-                      Text('Date: ${order.createdAt.toString()}'),
-                      Text('Total: \$${order.totalAmount.toStringAsFixed(2)}'),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    icon: Icon(Icons.arrow_forward_ios),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              OrderDetailsView(order: order),
-                        ),
-                      );
-                    },
-                  ),
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Order #${order.id}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text('Status: ${order.status}',
+                              style: TextStyle(
+                                color: order.status.toLowerCase() == 'accepted'
+                                    ? Colors.green
+                                    : Colors.black,
+                              )),
+                          SizedBox(height: 4),
+                          Text('Date: ${order.createdAt.toLocal()}'),
+                          SizedBox(height: 4),
+                          Text(
+                              'Total: \$${order.totalAmount.toStringAsFixed(2)}'),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.arrow_forward_ios),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                OrderDetailsView(order: order),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               );
             },
@@ -77,4 +109,3 @@ class OrderView extends HookWidget {
     );
   }
 }
-

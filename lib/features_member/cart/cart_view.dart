@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_flutter/models/cart_item_model.dart';
 import 'package:ecommerce_flutter/models/product_model.dart';
 import 'package:ecommerce_flutter/services/cart_service.dart';
+import 'package:ecommerce_flutter/services/order_service.dart';
 import 'package:ecommerce_flutter/services/product_service.dart';
 import 'package:ecommerce_flutter/services/user_service.dart';
 import 'package:ecommerce_flutter/utils/color_utils.dart';
@@ -20,6 +20,7 @@ class CartView extends HookWidget {
     final cartItems = useState<List<CartItemModel>>([]);
     final isLoading = useState<bool>(true);
     final totalAmount = useState<double>(0.0);
+    final orderService = OrderService();
 
     final currentUserId = userService.getCurrentUserId();
 
@@ -206,8 +207,7 @@ class CartView extends HookWidget {
                       SizedBox(height: 8.h),
                       ElevatedButton(
                         onPressed: () async {
-                          await moveCartToOrders(
-                              currentUserId, cartItems.value);
+                          await orderService.moveCartToOrders(cartItems.value);
                           await cartService.clearCart(currentUserId);
                           cartItems.value.clear();
                           totalAmount.value = 0.0;
@@ -223,18 +223,5 @@ class CartView extends HookWidget {
               ],
             ),
     );
-  }
-
-  Future<void> moveCartToOrders(
-      String userId, List<CartItemModel> items) async {
-    final ordersCollection = FirebaseFirestore.instance.collection('orders');
-    await ordersCollection.add({
-      'userId': userId,
-      'items': items.map((item) => item.toJson()).toList(),
-      'status': 'pending',
-      'createdAt': FieldValue.serverTimestamp(),
-      'totalAmount':
-          items.fold(0.0, (sum, item) => sum + (item.quantity * item.price)),
-    });
   }
 }

@@ -1,3 +1,4 @@
+
 class ProductModel {
   final String id;
   final String name;
@@ -5,7 +6,8 @@ class ProductModel {
   final String description;
   final double price;
   final String imageUrl;
-  final List<String> favoriteUserIds; // List of user IDs who favorited this product
+  final List<String> favoriteUserIds;
+  final Map<String, String> comments;
 
   ProductModel({
     required this.id,
@@ -14,7 +16,8 @@ class ProductModel {
     required this.description,
     required this.price,
     required this.imageUrl,
-    this.favoriteUserIds = const [], // Default to an empty list
+    this.favoriteUserIds = const [],
+    this.comments = const {},
   });
 
   Map<String, dynamic> toJson() {
@@ -24,7 +27,19 @@ class ProductModel {
       'description': description,
       'price': price,
       'imageUrl': imageUrl,
-      'favoriteUserIds': favoriteUserIds, // Store the list in Firestore
+      'favoriteUserIds': favoriteUserIds,
+      'comments': comments,
     };
   }
+
+  List<Comment> get commentsList {
+    return comments.entries.map((entry) => Comment(userId: entry.key, text: entry.value)).toList();
+  }
+}
+
+class Comment {
+  final String userId;
+  final String text;
+
+  Comment({required this.userId, required this.text});
 }

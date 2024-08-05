@@ -74,7 +74,7 @@ class CartService {
     }
   }
 
-  // Update item quantity in the cart
+
   Future<void> updateCartItemQuantity(String userId, String productId, int newQuantity) async {
     try {
       DocumentReference cartRef = _firestore.collection('carts').doc(userId);
