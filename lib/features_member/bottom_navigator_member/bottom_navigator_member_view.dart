@@ -92,37 +92,37 @@ class _BottomNavigationViewState
                   ),
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(
-                      AssetUtils.chat,
+                      AssetUtils.cart,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.primaryColor,
                         BlendMode.srcIn,
                       ),
                     ),
                     activeIcon: SvgPicture.asset(
-                      AssetUtils.chatActive,
+                      AssetUtils.cartActive,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.blueColor,
                         BlendMode.srcIn,
                       ),
                     ),
-                    label: "Chat",
+                    label: "Cart",
                   ),
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(
-                      AssetUtils.search,
+                      AssetUtils.order,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.primaryColor,
                         BlendMode.srcIn,
                       ),
                     ),
                     activeIcon: SvgPicture.asset(
-                      AssetUtils.searchActive,
+                      AssetUtils.orderActive,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.blueColor,
                         BlendMode.srcIn,
                       ),
                     ),
-                    label: "Search",
+                    label: "Order",
                   ),
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(

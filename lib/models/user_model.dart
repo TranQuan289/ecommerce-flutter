@@ -4,7 +4,8 @@ class UserModel {
   final String phone;
   final String email;
   final String dateOfBirth;
-  final String role; 
+  final String role;
+  final String address;
 
   UserModel({
     required this.id,
@@ -13,6 +14,7 @@ class UserModel {
     required this.email,
     required this.dateOfBirth,
     required this.role,
+    required this.address,
   });
 
   Map<String, dynamic> toJson() {
@@ -22,6 +24,7 @@ class UserModel {
       'email': email,
       'dateOfBirth': dateOfBirth,
       'role': role,
+      'address': address,
     };
   }
 }

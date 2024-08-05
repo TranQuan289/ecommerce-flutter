@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_flutter/models/cart_item_model.dart';
 import 'package:ecommerce_flutter/models/product_model.dart';
 import 'package:ecommerce_flutter/services/cart_service.dart';
-import 'package:ecommerce_flutter/services/product_service.dart'; // Import ProductService
-import 'package:ecommerce_flutter/services/user_service.dart'; // Import UserService
+import 'package:ecommerce_flutter/services/product_service.dart';
+import 'package:ecommerce_flutter/services/user_service.dart';
 import 'package:ecommerce_flutter/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -14,23 +15,17 @@ class CartView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final cartService = CartService();
-    final productService =
-        ProductService(); // Create an instance of ProductService
-    final userService = UserService(); // Create an instance of UserService
+    final productService = ProductService();
+    final userService = UserService();
     final cartItems = useState<List<CartItemModel>>([]);
     final isLoading = useState<bool>(true);
-    final totalAmount = useState<double>(0.0); // To hold the total amount
+    final totalAmount = useState<double>(0.0);
 
-    // Get the current user ID directly from UserService
     final currentUserId = userService.getCurrentUserId();
 
     void calculateTotalAmount() {
-      totalAmount.value = cartItems.value.fold(
-          0.0,
-          (sum, item) =>
-              sum +
-              (item.quantity *
-                  item.price)); // Assuming price is available in the CartItemModel
+      totalAmount.value = cartItems.value
+          .fold(0.0, (sum, item) => sum + (item.quantity * item.price));
     }
 
     useEffect(() {
@@ -39,7 +34,7 @@ class CartView extends HookWidget {
           List<CartItemModel> fetchedItems =
               await cartService.fetchCartItems(currentUserId);
           cartItems.value = fetchedItems;
-          calculateTotalAmount(); // Calculate total amount on fetch
+          calculateTotalAmount();
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Failed to load cart items: $e'),
@@ -78,14 +73,12 @@ class CartView extends HookWidget {
                     itemBuilder: (context, index) {
                       final item = cartItems.value[index];
                       return FutureBuilder<ProductModel?>(
-                        future: productService.fetchProductDetails(
-                            item.productId), // Fetch product details
+                        future:
+                            productService.fetchProductDetails(item.productId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return Center(
-                                child:
-                                    CircularProgressIndicator()); // Show loading indicator while fetching
+                            return Center(child: CircularProgressIndicator());
                           } else if (snapshot.hasError) {
                             return ListTile(
                                 title: Text('Error fetching product details'));
@@ -105,8 +98,7 @@ class CartView extends HookWidget {
                                     color: Colors.grey.withOpacity(0.5),
                                     spreadRadius: 2,
                                     blurRadius: 5,
-                                    offset: Offset(
-                                        0, 3), // changes position of shadow
+                                    offset: Offset(0, 3),
                                   ),
                                 ],
                               ),
@@ -149,36 +141,45 @@ class CartView extends HookWidget {
                                       IconButton(
                                         icon: Icon(Icons.remove,
                                             color: Colors.red),
-                                        onPressed: () {
+                                        onPressed: () async {
                                           if (item.quantity > 1) {
+                                            await cartService
+                                                .updateCartItemQuantity(
+                                                    currentUserId,
+                                                    item.productId,
+                                                    item.quantity - 1);
                                             item.quantity--;
-                                            cartItems.value = List.from(
-                                                cartItems.value); // Refresh UI
-                                            calculateTotalAmount(); // Recalculate total
+                                            cartItems.value =
+                                                List.from(cartItems.value);
+                                            calculateTotalAmount();
                                           }
                                         },
                                       ),
                                       IconButton(
                                         icon: Icon(Icons.add,
                                             color: Colors.green),
-                                        onPressed: () {
+                                        onPressed: () async {
+                                          await cartService
+                                              .updateCartItemQuantity(
+                                                  currentUserId,
+                                                  item.productId,
+                                                  item.quantity + 1);
                                           item.quantity++;
-                                          cartItems.value = List.from(
-                                              cartItems.value); // Refresh UI
-                                          calculateTotalAmount(); // Recalculate total
+                                          cartItems.value =
+                                              List.from(cartItems.value);
+                                          calculateTotalAmount();
                                         },
                                       ),
                                       IconButton(
                                         icon: Icon(Icons.delete,
                                             color: Colors.black),
                                         onPressed: () async {
-                                          // Remove item from cart
-                                          await cartService.removeFromCart(item
-                                              .id); // Implement this method in CartService
+                                          await cartService.removeFromCart(
+                                              currentUserId, item.productId);
                                           cartItems.value.removeAt(index);
-                                          cartItems.value = List.from(
-                                              cartItems.value); // Refresh UI
-                                          calculateTotalAmount(); // Recalculate total
+                                          cartItems.value =
+                                              List.from(cartItems.value);
+                                          calculateTotalAmount();
                                         },
                                       ),
                                     ],
@@ -198,27 +199,23 @@ class CartView extends HookWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        'Total: ${totalAmount.value} USD',
+                        'Total: ${totalAmount.value.toStringAsFixed(2)} USD',
                         style: TextStyle(
                             fontSize: 20.sp, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 8.h),
                       ElevatedButton(
                         onPressed: () async {
-                          // Checkout logic
-                          for (var item in cartItems.value) {
-                            await cartService.addToWaitingCart(
-                                item); // You need to implement this method
-                          }
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(
-                                'Checkout successful! Your order is waiting for approval.'),
-                          ));
-                          // Clear cart after checkout
+                          await moveCartToOrders(
+                              currentUserId, cartItems.value);
+                          await cartService.clearCart(currentUserId);
                           cartItems.value.clear();
-                          totalAmount.value = 0.0; // Reset total
+                          totalAmount.value = 0.0;
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Order placed successfully!'),
+                          ));
                         },
-                        child: Text('Checkout'),
+                        child: Text('Place Order'),
                       ),
                     ],
                   ),
@@ -226,5 +223,18 @@ class CartView extends HookWidget {
               ],
             ),
     );
+  }
+
+  Future<void> moveCartToOrders(
+      String userId, List<CartItemModel> items) async {
+    final ordersCollection = FirebaseFirestore.instance.collection('orders');
+    await ordersCollection.add({
+      'userId': userId,
+      'items': items.map((item) => item.toJson()).toList(),
+      'status': 'pending',
+      'createdAt': FieldValue.serverTimestamp(),
+      'totalAmount':
+          items.fold(0.0, (sum, item) => sum + (item.quantity * item.price)),
+    });
   }
 }

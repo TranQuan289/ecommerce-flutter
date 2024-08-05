@@ -95,48 +95,79 @@ class ProductManagementView extends HookWidget {
         itemCount: products.value.length,
         itemBuilder: (context, index) {
           final product = products.value[index];
-          return Card(
+          return Container(
             margin: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
-            elevation: 2,
-            child: ListTile(
-              leading: product.imageUrl.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      child: Image.network(
-                        product.imageUrl,
-                        width: 100.w,
-                        height: 100.h,
-                        fit: BoxFit.cover,
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: ColorUtils.whiteColor,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: product.imageUrl.isNotEmpty
+                      ? Image.network(
+                          product.imageUrl,
+                          width: 100.w,
+                          height: 100.h,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          width: 100.w,
+                          height: 100.h,
+                          color: Colors.grey[300],
+                          child: Icon(Icons.image, color: Colors.grey),
+                        ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        style: TextStyle(
+                            fontSize: 18.sp, fontWeight: FontWeight.bold),
                       ),
-                    )
-                  : Container(
-                      width: 100.w,
-                      height: 100.h,
-                      color: Colors.grey[300],
-                      child: Icon(Icons.image, color: Colors.grey),
+                      SizedBox(height: 5.h),
+                      Text(
+                        '${product.price} USD',
+                        style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        _showProductDialog(
+                            context, product, categories.value, refresh);
+                      },
                     ),
-              title: Text(product.name),
-              subtitle: Text('${product.price} USD'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      _showProductDialog(
-                          context, product, categories.value, refresh);
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () async {
-                      await productService.deleteProduct(product.id);
-                      products.value.removeAt(index);
-                      products.value = List.from(products.value);
-                    },
-                  ),
-                ],
-              ),
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () async {
+                        await productService.deleteProduct(product.id);
+                        products.value.removeAt(index);
+                        products.value = List.from(products.value);
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           );
         },

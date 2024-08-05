@@ -12,6 +12,7 @@ class TextFormFieldCustomWidget extends StatelessWidget {
   final Function(String value)? onChanged;
   final TextInputType? textInputType;
   final String? Function(String?)? validator;
+  final bool isEnable;
 
   const TextFormFieldCustomWidget({
     Key? key,
@@ -24,6 +25,7 @@ class TextFormFieldCustomWidget extends StatelessWidget {
     this.inputAction,
     this.textInputType,
     this.validator,
+    this.isEnable = true,
   }) : super(key: key);
 
   @override
@@ -43,6 +45,7 @@ class TextFormFieldCustomWidget extends StatelessWidget {
           height: 5.h,
         ),
         TextFormField(
+          enabled: isEnable,
           controller: controller,
           obscureText: obscureText ?? false,
           onChanged: onChanged,

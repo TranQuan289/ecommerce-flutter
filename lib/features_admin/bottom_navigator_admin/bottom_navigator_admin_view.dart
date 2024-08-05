@@ -109,37 +109,37 @@ class _BottomNavigationViewState extends BaseStateDelegate<
                   ),
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(
-                      AssetUtils.search,
+                      AssetUtils.order,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.primaryColor,
                         BlendMode.srcIn,
                       ),
                     ),
                     activeIcon: SvgPicture.asset(
-                      AssetUtils.searchActive,
+                      AssetUtils.orderActive,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.blueColor,
                         BlendMode.srcIn,
                       ),
                     ),
-                    label: "Search",
+                    label: "Order",
                   ),
                   BottomNavigationBarItem(
                     icon: SvgPicture.asset(
-                      AssetUtils.profile,
+                      AssetUtils.chart,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.primaryColor,
                         BlendMode.srcIn,
                       ),
                     ),
                     activeIcon: SvgPicture.asset(
-                      AssetUtils.profileActive,
+                      AssetUtils.chartActive,
                       colorFilter: ColorFilter.mode(
                         ColorUtils.blueColor,
                         BlendMode.srcIn,
                       ),
                     ),
-                    label: "profile",
+                    label: "chart",
                   ),
                 ],
                 backgroundColor: ColorUtils.whiteColor,

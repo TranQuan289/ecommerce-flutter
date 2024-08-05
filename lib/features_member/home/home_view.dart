@@ -1,7 +1,7 @@
 import 'package:ecommerce_flutter/features_member/home/product_detail_view.dart';
 import 'package:ecommerce_flutter/models/product_model.dart';
 import 'package:ecommerce_flutter/services/product_service.dart';
-import 'package:ecommerce_flutter/services/user_service.dart'; // Import the UserService
+import 'package:ecommerce_flutter/services/user_service.dart'; // Import UserService
 import 'package:ecommerce_flutter/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -22,9 +22,7 @@ class HomeView extends HookWidget {
       Future<void> fetchCurrentUserId() async {
         // Fetch the current user ID from the UserService
         try {
-          // Assuming you have a method to fetch the current user
-          String userId = userService
-              .getCurrentUserId(); // Implement this method in UserService
+          String userId = userService.getCurrentUserId(); // Get current user ID
           currentUserId.value = userId;
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -93,24 +91,63 @@ class HomeView extends HookWidget {
         itemCount: products.value.length,
         itemBuilder: (context, index) {
           final product = products.value[index];
-          return Card(
-            margin: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
-            elevation: 2,
-            child: ListTile(
-              leading: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                child: Image.network(
-                  product.imageUrl,
-                  width: 100.w,
-                  height: 100.h,
-                  fit: BoxFit.cover,
+          return InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailView(product: product),
                 ),
+              );
+            },
+            child: Container(
+              margin: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: ColorUtils.whiteColor,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
               ),
-              title: Text(product.name),
-              subtitle: Text('${product.price} USD'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      product.imageUrl,
+                      width: 100.w,
+                      height: 100.h,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          style: TextStyle(
+                              fontSize: 18.sp, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(
+                          height: 19,
+                        ),
+                        Text(
+                          '${product.price} USD',
+                          style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
                   IconButton(
                     icon: Icon(
                       product.favoriteUserIds.contains(currentUserId.value)
@@ -124,23 +161,9 @@ class HomeView extends HookWidget {
                     onPressed: () async {
                       await productService.toggleFavorite(
                           product.id, currentUserId.value);
-                      // Refresh the product list to reflect the updated favorite status
                       final updatedProducts =
                           await productService.fetchProducts();
                       products.value = updatedProducts;
-                    },
-                  ),
-                  // Inside the ListView.builder in HomeView
-                  IconButton(
-                    icon: Icon(Icons.info),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ProductDetailView(product: product),
-                        ),
-                      );
                     },
                   ),
                 ],

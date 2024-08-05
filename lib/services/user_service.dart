@@ -15,13 +15,14 @@ class UserService {
       );
 
       UserModel newUser = UserModel(
-          id: userCredential.user!.uid,
-          name: user.name,
-          phone: user.phone,
-          email: user.email,
-
-          dateOfBirth: user.dateOfBirth,
-          role: 'member');
+        id: userCredential.user!.uid,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        dateOfBirth: user.dateOfBirth,
+        role: 'member',
+        address: user.address,
+      );
 
       await _firestore
           .collection('users')
@@ -53,6 +54,7 @@ class UserService {
           email: userData['email'],
           dateOfBirth: userData['dateOfBirth'],
           role: userData['role'],
+          address: userData['address'],
         );
       }
     } catch (e) {
@@ -60,7 +62,8 @@ class UserService {
     }
     return null;
   }
-    Future<List<UserModel>> fetchUsers() async {
+
+  Future<List<UserModel>> fetchUsers() async {
     try {
       QuerySnapshot querySnapshot = await _firestore.collection('users').get();
       return querySnapshot.docs.map((doc) {
@@ -72,6 +75,7 @@ class UserService {
           email: data['email'],
           dateOfBirth: data['dateOfBirth'],
           role: data['role'],
+          address: data['address'],
         );
       }).toList();
     } catch (e) {
@@ -86,11 +90,26 @@ class UserService {
       throw Exception('Error updating user: $e');
     }
   }
-   String getCurrentUserId() {
+
+  String getCurrentUserId() {
     User? user = _auth.currentUser;
     if (user != null) {
       return user.uid;
     }
     throw Exception('No user is currently logged in.');
+  }
+
+  Future<Map<String, dynamic>> fetchUserDetails(String userId) async {
+    try {
+      DocumentSnapshot doc =
+          await _firestore.collection('users').doc(userId).get();
+      if (doc.exists) {
+        return doc.data() as Map<String, dynamic>;
+      } else {
+        throw Exception('User not found');
+      }
+    } catch (e) {
+      throw Exception('Error fetching user details: $e');
+    }
   }
 }

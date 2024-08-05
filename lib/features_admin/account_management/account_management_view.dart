@@ -1,6 +1,7 @@
 import 'package:ecommerce_flutter/models/user_model.dart';
 import 'package:ecommerce_flutter/services/user_service.dart';
 import 'package:ecommerce_flutter/utils/color_utils.dart';
+import 'package:ecommerce_flutter/utils/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -46,6 +47,14 @@ class AccountManagementView extends HookWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                Routes.goToSignInScreen(context);
+              },
+              icon: Icon(Icons.logout),
+            )
+          ],
         ),
         body: Center(child: CircularProgressIndicator()),
       );
@@ -64,6 +73,13 @@ class AccountManagementView extends HookWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Routes.goToSignInScreen(context);
+              },
+              icon: Icon(Icons.logout))
+        ],
       ),
       body: ListView.builder(
         itemCount: users.value.length,
@@ -131,6 +147,7 @@ class AccountManagementView extends HookWidget {
     final phoneController = TextEditingController(text: user.phone);
     final emailController = TextEditingController(text: user.email);
     final dateOfBirthController = TextEditingController(text: user.dateOfBirth);
+    final addressController = TextEditingController(text: user.address);
 
     showDialog(
       context: context,
@@ -139,6 +156,7 @@ class AccountManagementView extends HookWidget {
           title: Text('Edit User'),
           content: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
@@ -149,8 +167,17 @@ class AccountManagementView extends HookWidget {
                   decoration: InputDecoration(labelText: 'Phone'),
                 ),
                 TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(labelText: 'Email'),
+                  enabled: false, // Không cho phép chỉnh sửa email
+                ),
+                TextField(
                   controller: dateOfBirthController,
                   decoration: InputDecoration(labelText: 'Date of Birth'),
+                ),
+                TextField(
+                  controller: addressController,
+                  decoration: InputDecoration(labelText: 'Address'),
                 ),
               ],
             ),
@@ -169,9 +196,10 @@ class AccountManagementView extends HookWidget {
                   id: user.id,
                   name: nameController.text,
                   phone: phoneController.text,
-                  email: emailController.text,
+                  email: user.email, // Giữ nguyên email
                   dateOfBirth: dateOfBirthController.text,
                   role: user.role,
+                  address: addressController.text,
                 );
                 try {
                   await UserService().updateUser(updatedUser);

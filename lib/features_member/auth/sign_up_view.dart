@@ -21,6 +21,7 @@ class _SignUpViewState extends State<SignUpView> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _addressController = TextEditingController();
 
   bool _isPasswordVisible = false;
   final UserService _userService = UserService();
@@ -34,6 +35,7 @@ class _SignUpViewState extends State<SignUpView> {
         email: _emailController.text,
         dateOfBirth: DateTime.now().toString(),
         role: 'member',
+        address: _addressController.text,
       );
 
       showDialog(
@@ -49,10 +51,13 @@ class _SignUpViewState extends State<SignUpView> {
           user,
           _passwordController.text,
         );
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(); // Dismiss loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration successful!')),
+        );
         Routes.goToSignInScreen(context);
       } catch (e) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(); // Dismiss loading dialog
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Failed to register user: $e'),
         ));
@@ -88,37 +93,63 @@ class _SignUpViewState extends State<SignUpView> {
                     fontSize: 14,
                   ),
                 ),
-                SizedBox(
-                  height: 10.h,
-                ),
+                SizedBox(height: 10.h),
                 TextFormFieldCustomWidget(
                   hint: 'Your full name',
                   label: "Full name",
                   controller: _nameController,
                   inputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your full name';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(
-                  height: 20.h,
-                ),
+                SizedBox(height: 20.h),
                 TextFormFieldCustomWidget(
                   hint: 'Your email address',
                   label: "Email address",
                   inputAction: TextInputAction.next,
                   controller: _emailController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email address';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(
-                  height: 20.h,
-                ),
+                SizedBox(height: 20.h),
                 TextFormFieldCustomWidget(
                   hint: 'Your phone number',
                   label: "Phone number",
                   inputAction: TextInputAction.next,
                   controller: _phoneController,
                   textInputType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(
-                  height: 20.h,
+                SizedBox(height: 20.h),
+                TextFormFieldCustomWidget(
+                  hint: 'Your address',
+                  label: "Address",
+                  inputAction: TextInputAction.next,
+                  controller: _addressController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your address';
+                    }
+                    return null;
+                  },
                 ),
+                SizedBox(height: 20.h),
                 TextFormFieldCustomWidget(
                   hint: 'Your password',
                   label: "Password",
@@ -137,17 +168,22 @@ class _SignUpViewState extends State<SignUpView> {
                           : Icons.visibility_off,
                     ),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters long';
+                    }
+                    return null;
+                  },
                 ),
-                SizedBox(
-                  height: 20.h,
-                ),
+                SizedBox(height: 20.h),
                 TextButtonWidget(
                   label: 'Register',
                   onPressed: _register,
                 ),
-                SizedBox(
-                  height: 10.h,
-                ),
+                SizedBox(height: 10.h),
                 Row(
                   children: [
                     Expanded(
@@ -172,9 +208,7 @@ class _SignUpViewState extends State<SignUpView> {
                     ),
                   ],
                 ),
-                SizedBox(
-                  height: 10.h,
-                ),
+                SizedBox(height: 10.h),
                 Align(
                   alignment: Alignment.centerRight,
                   child: Row(

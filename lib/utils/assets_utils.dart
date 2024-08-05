@@ -12,4 +12,10 @@ class AssetUtils {
   static const searchActive = 'assets/icons/ic_search_active.svg';
   static const product = 'assets/icons/ic_product.svg';
   static const productActive = 'assets/icons/ic_product_active.svg';
+  static const cart = 'assets/icons/ic_cart.svg';
+  static const cartActive = 'assets/icons/ic_cart_active.svg';
+  static const order = 'assets/icons/ic_order.svg';
+  static const orderActive = 'assets/icons/ic_order_active.svg';
+  static const chart = 'assets/icons/ic_chart.svg';
+  static const chartActive = 'assets/icons/ic_chart_active.svg';
 }

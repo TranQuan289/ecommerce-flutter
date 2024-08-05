@@ -1,27 +1,27 @@
 class CartItemModel {
-  final String id; // Unique identifier for the cart item
-  final String productId; // The ID of the product being ordered
-  int quantity; // How many of this product
-  final String userId; // The user who added the item
-  final String status; // Status of the order: waiting, delivering, etc.
-  final double price; // Price of the product
+  final String productId;
+  int quantity;
+  final double price;
 
   CartItemModel({
-    required this.id,
     required this.productId,
     required this.quantity,
-    required this.userId,
-    this.status = 'waiting', // Default status is waiting
-    required this.price, // Price of the product
+    required this.price,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'productId': productId,
       'quantity': quantity,
-      'userId': userId,
-      'status': status,
-      'price': price, // Include price in the Firestore document
+      'price': price,
     };
+  }
+
+  factory CartItemModel.fromJson(Map<String, dynamic> json) {
+    return CartItemModel(
+      productId: json['productId'],
+      quantity: json['quantity'],
+      price: json['price'],
+    );
   }
 }
