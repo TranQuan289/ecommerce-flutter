@@ -2,8 +2,8 @@ class CartItemModel {
   final String productId;
   int quantity;
   final double price;
-  final String productName; // Add this
-  final String imageUrl;    // Add this
+  final String productName; 
+  final String imageUrl; 
 
   CartItemModel({
     required this.productId,

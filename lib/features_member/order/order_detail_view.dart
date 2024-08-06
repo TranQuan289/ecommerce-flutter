@@ -30,7 +30,7 @@ class OrderDetailsView extends StatelessWidget {
                 _buildInfoRow('Date',
                     DateFormat('dd/MM/yyyy HH:mm').format(order.createdAt)),
                 _buildInfoRow(
-                    'Total', '\$${order.totalAmount.toStringAsFixed(2)}'),
+                    'Total', '${order.totalAmount.toStringAsFixed(0)}\$'),
                 _buildInfoRow('Payment Method',
                     order.paymentMethod ?? 'Cash on Delivery'),
               ],
@@ -134,10 +134,10 @@ class OrderDetailsView extends StatelessWidget {
                   SizedBox(height: 4.h),
                   Text('Quantity: ${item.quantity}'),
                   SizedBox(height: 4.h),
-                  Text('Price: \$${item.price.toStringAsFixed(2)}'),
+                  Text('Price: ${item.price.toStringAsFixed(0)}\$'),
                   SizedBox(height: 4.h),
                   Text(
-                    'Total: \$${(item.price * item.quantity).toStringAsFixed(2)}',
+                    'Total: ${(item.price * item.quantity).toStringAsFixed(0)}\$',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],

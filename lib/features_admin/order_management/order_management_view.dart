@@ -73,7 +73,7 @@ class OrderManagementView extends HookWidget {
                           ),
                           SizedBox(height: 8.h),
                           Text(
-                            'Total: \$${order.totalAmount.toStringAsFixed(2)}',
+                            'Total: ${order.totalAmount.toStringAsFixed(0)}\$',
                             style: TextStyle(fontSize: 14.sp),
                           ),
                           SizedBox(height: 4.h),

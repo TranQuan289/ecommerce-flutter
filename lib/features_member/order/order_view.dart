@@ -1,9 +1,11 @@
 import 'package:ecommerce_flutter/features_member/order/order_detail_view.dart';
+import 'package:ecommerce_flutter/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce_flutter/models/order_model.dart';
 import 'package:ecommerce_flutter/services/order_service.dart';
 import 'package:ecommerce_flutter/services/user_service.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class OrderView extends HookWidget {
   const OrderView({Key? key}) : super(key: key);
@@ -24,7 +26,14 @@ class OrderView extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders'),
+        title: Text(
+          'My Orders',
+          style: TextStyle(
+            color: ColorUtils.primaryColor,
+            fontSize: 24.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: StreamBuilder<List<OrderModel>>(
         stream: ordersStream,
@@ -83,7 +92,7 @@ class OrderView extends HookWidget {
                           Text('Date: ${order.createdAt.toLocal()}'),
                           SizedBox(height: 4),
                           Text(
-                              'Total: \$${order.totalAmount.toStringAsFixed(2)}'),
+                              'Total: ${order.totalAmount.toStringAsFixed(0)}\$'),
                         ],
                       ),
                     ),

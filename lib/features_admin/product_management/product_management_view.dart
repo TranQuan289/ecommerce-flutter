@@ -195,11 +195,16 @@ class ProductManagementView extends HookWidget {
           title: Text(product == null ? 'Add Product' : 'Edit Product'),
           content: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(labelText: 'Product Name'),
                 ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text('Category'),
                 DropdownButtonFormField<String>(
                   hint: Text('Select Category'),
                   value: product?.category,

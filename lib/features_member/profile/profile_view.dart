@@ -35,7 +35,7 @@ class ProfileView extends HookWidget {
         );
         if (result == true) {
           await _loadUserData(
-              userService, user, isLoading); // Reload user data after update
+              userService, user, isLoading);
         }
       }
     }

@@ -1,3 +1,4 @@
+import 'package:ecommerce_flutter/common/widgets/text_button_outline_widget.dart';
 import 'package:ecommerce_flutter/models/cart_item_model.dart';
 import 'package:ecommerce_flutter/models/product_model.dart';
 import 'package:ecommerce_flutter/services/cart_service.dart';
@@ -8,6 +9,7 @@ import 'package:ecommerce_flutter/utils/color_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rxdart/rxdart.dart';
 
 class CartView extends HookWidget {
   const CartView({Key? key}) : super(key: key);
@@ -23,6 +25,25 @@ class CartView extends HookWidget {
     final orderService = OrderService();
 
     final currentUserId = userService.getCurrentUserId();
+
+    // Create a subject for debouncing
+    final updateSubject =
+        useMemoized(() => PublishSubject<Map<String, dynamic>>());
+
+    useEffect(() {
+      // Set up the debounce
+      final subscription = updateSubject
+          .debounceTime(const Duration(milliseconds: 500))
+          .listen((data) {
+        cartService.updateCartItemQuantity(
+            currentUserId, data['productId'], data['quantity']);
+      });
+
+      return () {
+        updateSubject.close();
+        subscription.cancel();
+      };
+    }, []);
 
     void calculateTotalAmount() {
       totalAmount.value = cartItems.value
@@ -49,11 +70,39 @@ class CartView extends HookWidget {
       return null;
     }, []);
 
+    void updateQuantity(CartItemModel item, int newQuantity) {
+      final index =
+          cartItems.value.indexWhere((i) => i.productId == item.productId);
+      if (index != -1) {
+        final updatedItem = CartItemModel(
+          productId: item.productId,
+          quantity: newQuantity,
+          price: item.price,
+          productName: item.productName,
+          imageUrl: item.imageUrl,
+        );
+        cartItems.value[index] = updatedItem;
+        cartItems.value = List.from(cartItems.value);
+        calculateTotalAmount();
+
+        // Add to subject instead of calling API directly
+        updateSubject
+            .add({'productId': item.productId, 'quantity': newQuantity});
+      }
+    }
+
     if (isLoading.value) {
       return Scaffold(
         appBar: AppBar(
           backgroundColor: ColorUtils.primaryBackgroundColor,
-          title: Text('Cart'),
+          title: Text(
+            'Cart',
+            style: TextStyle(
+              color: ColorUtils.primaryColor,
+              fontSize: 24.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         body: Center(child: CircularProgressIndicator()),
       );
@@ -62,11 +111,19 @@ class CartView extends HookWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: ColorUtils.primaryBackgroundColor,
-        title: Text('Cart'),
+        title: Text(
+          'Cart',
+          style: TextStyle(
+            color: ColorUtils.primaryColor,
+            fontSize: 24.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: cartItems.value.isEmpty
           ? Center(child: Text('Your cart is empty.'))
           : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: ListView.builder(
@@ -77,10 +134,7 @@ class CartView extends HookWidget {
                         future:
                             productService.fetchProductDetails(item.productId),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
+                          if (snapshot.hasError) {
                             return ListTile(
                                 title: Text('Error fetching product details'));
                           } else if (!snapshot.hasData) {
@@ -142,33 +196,19 @@ class CartView extends HookWidget {
                                       IconButton(
                                         icon: Icon(Icons.remove,
                                             color: Colors.red),
-                                        onPressed: () async {
+                                        onPressed: () {
                                           if (item.quantity > 1) {
-                                            await cartService
-                                                .updateCartItemQuantity(
-                                                    currentUserId,
-                                                    item.productId,
-                                                    item.quantity - 1);
-                                            item.quantity--;
-                                            cartItems.value =
-                                                List.from(cartItems.value);
-                                            calculateTotalAmount();
+                                            updateQuantity(
+                                                item, item.quantity - 1);
                                           }
                                         },
                                       ),
                                       IconButton(
                                         icon: Icon(Icons.add,
                                             color: Colors.green),
-                                        onPressed: () async {
-                                          await cartService
-                                              .updateCartItemQuantity(
-                                                  currentUserId,
-                                                  item.productId,
-                                                  item.quantity + 1);
-                                          item.quantity++;
-                                          cartItems.value =
-                                              List.from(cartItems.value);
-                                          calculateTotalAmount();
+                                        onPressed: () {
+                                          updateQuantity(
+                                              item, item.quantity + 1);
                                         },
                                       ),
                                       IconButton(
@@ -195,17 +235,17 @@ class CartView extends HookWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total: ${totalAmount.value.toStringAsFixed(2)} USD',
+                        'Total: ${totalAmount.value.toStringAsFixed(0)} USD',
                         style: TextStyle(
-                            fontSize: 20.sp, fontWeight: FontWeight.bold),
+                            fontSize: 18.sp, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 8.h),
-                      ElevatedButton(
+                      TextButtonOutlineWidget(
                         onPressed: () async {
                           await orderService.moveCartToOrders(cartItems.value);
                           await cartService.clearCart(currentUserId);
@@ -215,7 +255,7 @@ class CartView extends HookWidget {
                             content: Text('Order placed successfully!'),
                           ));
                         },
-                        child: Text('Place Order'),
+                        label: 'Place Order',
                       ),
                     ],
                   ),
