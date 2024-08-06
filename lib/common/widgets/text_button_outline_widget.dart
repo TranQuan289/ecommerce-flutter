@@ -16,13 +16,13 @@ class TextButtonOutlineWidget extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.resolveWith(
+        backgroundColor: WidgetStateProperty.resolveWith(
           (states) => ColorUtils.whiteColor,
         ),
-        minimumSize: MaterialStateProperty.resolveWith(
+        minimumSize: WidgetStateProperty.resolveWith(
           (states) => const Size(double.infinity, 60),
         ),
-        shape: MaterialStateProperty.resolveWith(
+        shape: WidgetStateProperty.resolveWith(
           (states) => RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(

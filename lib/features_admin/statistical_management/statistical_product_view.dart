@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_flutter/models/product_model.dart';
 import 'package:ecommerce_flutter/services/product_service.dart';
 import 'package:ecommerce_flutter/utils/color_utils.dart';
