@@ -20,6 +20,8 @@ class ProductManagementView extends HookWidget {
     final categories = useState<List<CategoryModel>>([]);
     final isLoading = useState<bool>(true);
     final refresh = useState<int>(0);
+    final searchQuery = useState<String>('');
+    final selectedCategory = useState<CategoryModel?>(null);
 
     useEffect(() {
       Future<void> fetchData() async {
@@ -43,6 +45,14 @@ class ProductManagementView extends HookWidget {
       fetchData();
       return null;
     }, [refresh.value]);
+
+    List<ProductModel> filteredProducts = products.value.where((product) {
+      bool matchesSearch =
+          product.name.toLowerCase().contains(searchQuery.value.toLowerCase());
+      bool matchesCategory = selectedCategory.value == null ||
+          product.category == selectedCategory.value!.name;
+      return matchesSearch && matchesCategory;
+    }).toList();
 
     if (isLoading.value) {
       return Scaffold(
@@ -91,87 +101,189 @@ class ProductManagementView extends HookWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: products.value.length,
-        itemBuilder: (context, index) {
-          final product = products.value[index];
-          return Container(
-            margin: EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: ColorUtils.whiteColor,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 3),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (value) {
+                      searchQuery.value = value;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Search Products',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                ElevatedButton(
+                  onPressed: () {
+                    _showCategoryFilterDialog(
+                        context, categories.value, selectedCategory);
+                  },
+                  child: Text('Filter'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
                 ),
               ],
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: product.imageUrl.isNotEmpty
-                      ? Image.network(
-                          product.imageUrl,
-                          width: 100.w,
-                          height: 100.h,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          width: 100.w,
-                          height: 100.h,
-                          color: Colors.grey[300],
-                          child: Icon(Icons.image, color: Colors.grey),
-                        ),
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name,
-                        style: TextStyle(
-                            fontSize: 18.sp, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 5.h),
-                      Text(
-                        '${product.price} USD',
-                        style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+          ),
+          if (selectedCategory.value != null)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                children: [
+                  Text('Filtered by: ${selectedCategory.value!.name}'),
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      selectedCategory.value = null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredProducts.length,
+              itemBuilder: (context, index) {
+                final product = filteredProducts[index];
+                return Container(
+                  margin:
+                      EdgeInsets.symmetric(vertical: 10.h, horizontal: 15.w),
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: ColorUtils.whiteColor,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
                       ),
                     ],
                   ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () {
-                        _showProductDialog(
-                            context, product, categories.value, refresh);
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () async {
-                        await productService.deleteProduct(product.id);
-                        products.value.removeAt(index);
-                        products.value = List.from(products.value);
-                      },
-                    ),
-                  ],
-                ),
-              ],
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: product.imageUrl.isNotEmpty
+                            ? Image.network(
+                                product.imageUrl,
+                                width: 100.w,
+                                height: 100.h,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                width: 100.w,
+                                height: 100.h,
+                                color: Colors.grey[300],
+                                child: Icon(Icons.image, color: Colors.grey),
+                              ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
+                              style: TextStyle(
+                                  fontSize: 18.sp, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 5.h),
+                            Text(
+                              '${product.price} USD',
+                              style: TextStyle(
+                                  fontSize: 16.sp, color: Colors.grey),
+                            ),
+                            Text(
+                              'Category: ${product.category}',
+                              style: TextStyle(
+                                  fontSize: 14.sp, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              _showProductDialog(
+                                  context, product, categories.value, refresh);
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () async {
+                              await productService.deleteProduct(product.id);
+                              products.value.remove(product);
+                              products.value = List.from(products.value);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
+    );
+  }
+
+  void _showCategoryFilterDialog(
+      BuildContext context,
+      List<CategoryModel> categories,
+      ValueNotifier<CategoryModel?> selectedCategory) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Filter by Category'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: categories.map((category) {
+                return ListTile(
+                  title: Text(category.name),
+                  onTap: () {
+                    selectedCategory.value = category;
+                    Navigator.of(context).pop();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Clear Filter'),
+              onPressed: () {
+                selectedCategory.value = null;
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -251,7 +363,7 @@ class ProductManagementView extends HookWidget {
                       selectedImage = File(image.path);
                       String imageUrl =
                           await productService.uploadImage(selectedImage!);
-                      imageUrlController.text = imageUrl; // Set the image URL
+                      imageUrlController.text = imageUrl;
                     }
                   },
                   child: Text('Select Image'),
@@ -307,81 +419,87 @@ class ProductManagementView extends HookWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Manage Categories'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return ListTile(
-                      title: Text(category.name),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () {
-                              _showEditCategoryDialog(
-                                  context, category, refresh);
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () async {
-                              try {
-                                await CategoryService()
-                                    .deleteCategory(category.id);
-                                categories.removeAt(index);
-                                categories = List.from(categories);
-                                Navigator.pop(context);
-                              } catch (e) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content:
-                                      Text(e.toString()), // Show error message
-                                ));
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                TextField(
-                  controller: categoryNameController,
-                  decoration: InputDecoration(labelText: 'New Category Name'),
-                ),
-              ],
+        return SingleChildScrollView(
+          child: AlertDialog(
+            title: Text('Manage Categories'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return ListTile(
+                        title: Text(category.name),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: category.isUsed
+                                  ? null
+                                  : () {
+                                      _showEditCategoryDialog(
+                                          context, category, refresh);
+                                    },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: category.isUsed
+                                  ? null
+                                  : () async {
+                                      try {
+                                        await CategoryService()
+                                            .deleteCategory(category.id);
+                                        categories.removeAt(index);
+                                        categories = List.from(categories);
+                                        Navigator.pop(context);
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                          content: Text(e.toString()),
+                                        ));
+                                      }
+                                    },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  TextField(
+                    controller: categoryNameController,
+                    decoration: InputDecoration(labelText: 'New Category Name'),
+                  ),
+                ],
+              ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Close'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final newCategory = CategoryModel(
+                    id: '',
+                    name: categoryNameController.text,
+                    isUsed: false,
+                  );
+                  await CategoryService().createCategory(newCategory);
+                  categories.add(newCategory);
+                  categories = List.from(categories);
+                  refresh.value++;
+                  Navigator.of(context).pop();
+                },
+                child: Text('Add Category'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
-            ),
-            TextButton(
-              onPressed: () async {
-                final newCategory = CategoryModel(
-                  id: '', // Will be auto-generated
-                  name: categoryNameController.text,
-                );
-                await CategoryService().createCategory(newCategory);
-                categories.add(newCategory); // Add the new category to the list
-                categories = List.from(categories); // Trigger UI update
-                refresh.value++; // Increment refresh to trigger useEffect
-                Navigator.of(context).pop();
-              },
-              child: Text('Add Category'),
-            ),
-          ],
         );
       },
     );
@@ -409,12 +527,17 @@ class ProductManagementView extends HookWidget {
             ),
             TextButton(
               onPressed: () async {
-                final updatedCategory = CategoryModel(
-                  id: category.id,
+                if (category.isUsed) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Cannot edit a category that is in use'),
+                  ));
+                  return;
+                }
+                final updatedCategory = category.copyWith(
                   name: categoryNameController.text,
                 );
                 await CategoryService().updateCategory(updatedCategory);
-                refresh.value++; // Increment refresh to trigger useEffect
+                refresh.value++;
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },

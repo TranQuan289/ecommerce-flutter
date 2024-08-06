@@ -19,11 +19,8 @@ class CategoryService {
       QuerySnapshot querySnapshot =
           await _firestore.collection('categories').get();
       return querySnapshot.docs.map((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        return CategoryModel(
-          id: doc.id,
-          name: data['name'],
-        );
+        return CategoryModel.fromJson(
+            doc.id, doc.data() as Map<String, dynamic>);
       }).toList();
     } catch (e) {
       throw Exception('Error fetching categories: $e');
@@ -33,6 +30,9 @@ class CategoryService {
   // Update an existing category
   Future<void> updateCategory(CategoryModel category) async {
     try {
+      if (category.isUsed) {
+        throw Exception('Cannot update category in use');
+      }
       await _firestore
           .collection('categories')
           .doc(category.id)
@@ -45,10 +45,46 @@ class CategoryService {
   // Delete a category
   Future<void> deleteCategory(String categoryId) async {
     try {
+      DocumentSnapshot doc =
+          await _firestore.collection('categories').doc(categoryId).get();
+      if (doc.exists) {
+        CategoryModel category =
+            CategoryModel.fromJson(doc.id, doc.data() as Map<String, dynamic>);
+        if (category.isUsed) {
+          throw Exception('Cannot delete category in use');
+        }
+      }
       await _firestore.collection('categories').doc(categoryId).delete();
-      fetchCategories();
     } catch (e) {
       throw Exception('Error deleting category: $e');
+    }
+  }
+
+  // Mark category as used
+  Future<void> markCategoryAsUsed(String categoryId) async {
+    try {
+      await _firestore
+          .collection('categories')
+          .doc(categoryId)
+          .update({'isUsed': true});
+    } catch (e) {
+      throw Exception('Error marking category as used: $e');
+    }
+  }
+
+  // Check if category is used
+  Future<bool> isCategoryUsed(String categoryId) async {
+    try {
+      DocumentSnapshot doc =
+          await _firestore.collection('categories').doc(categoryId).get();
+      if (doc.exists) {
+        CategoryModel category =
+            CategoryModel.fromJson(doc.id, doc.data() as Map<String, dynamic>);
+        return category.isUsed;
+      }
+      return false;
+    } catch (e) {
+      throw Exception('Error checking if category is used: $e');
     }
   }
 }
