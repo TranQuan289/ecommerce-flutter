@@ -132,6 +132,8 @@ class OrderDetailsView extends StatelessWidget {
                         TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 4.h),
+                  Text('Size: ${item.size}'),
+                  SizedBox(height: 4.h),
                   Text('Quantity: ${item.quantity}'),
                   SizedBox(height: 4.h),
                   Text('Price: ${item.price.toStringAsFixed(0)}\$'),

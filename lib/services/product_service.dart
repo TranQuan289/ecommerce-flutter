@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_flutter/models/product_model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,9 +6,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 class ProductService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
-
-// Example of adding a new product
+  final List<String> defaultSizes = ['38', '39', '40', '41', '42', '43', '44'];
   Future<void> createProduct(ProductModel product) async {
+    List<String> sizes =
+        product.availableSizes.isEmpty ? defaultSizes : product.availableSizes;
     try {
       await _firestore.collection('products').add({
         'name': product.name,
@@ -17,7 +17,8 @@ class ProductService {
         'description': product.description,
         'price': product.price,
         'imageUrl': product.imageUrl,
-        'favoriteUserIds': [], 
+        'favoriteUserIds': [],
+        'availableSizes': sizes,
       });
     } catch (e) {
       throw Exception('Error creating product: $e');
@@ -56,8 +57,8 @@ class ProductService {
           description: data['description'],
           price: data['price'],
           imageUrl: data['imageUrl'],
-          favoriteUserIds: List<String>.from(
-              data['favoriteUserIds'] ?? []), 
+          favoriteUserIds: List<String>.from(data['favoriteUserIds'] ?? []),
+          availableSizes: List<String>.from(data['availableSizes'] ?? []),
         );
       }).toList();
     } catch (e) {
@@ -75,11 +76,10 @@ class ProductService {
         List<String> favoriteUserIds =
             List<String>.from(productSnapshot['favoriteUserIds'] ?? []);
 
-    
         if (favoriteUserIds.contains(userId)) {
-          favoriteUserIds.remove(userId); 
+          favoriteUserIds.remove(userId);
         } else {
-          favoriteUserIds.add(userId); 
+          favoriteUserIds.add(userId);
         }
 
         await productRef.update({'favoriteUserIds': favoriteUserIds});
@@ -117,6 +117,7 @@ class ProductService {
           imageUrl: data['imageUrl'],
           favoriteUserIds: List<String>.from(data['favoriteUserIds'] ?? []),
           comments: Map<String, String>.from(data['comments'] ?? {}),
+          availableSizes: List<String>.from(data['availableSizes'] ?? []),
         );
       }
     } catch (e) {

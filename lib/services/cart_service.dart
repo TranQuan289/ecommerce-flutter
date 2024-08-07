@@ -13,17 +13,20 @@ class CartService {
         DocumentSnapshot cartSnapshot = await transaction.get(cartRef);
         
         if (!cartSnapshot.exists) {
-          transaction.set(cartRef, {'items': {cartItem.productId: cartItem.toJson()}});
+          transaction.set(cartRef, {'items': {
+            '${cartItem.productId}_${cartItem.size}': cartItem.toJson()
+          }});
         } else {
           Map<String, dynamic> cartData = cartSnapshot.data() as Map<String, dynamic>;
           Map<String, dynamic> items = Map<String, dynamic>.from(cartData['items'] ?? {});
           
-          if (items.containsKey(cartItem.productId)) {
-            CartItemModel existingItem = CartItemModel.fromJson(items[cartItem.productId]);
+          String itemKey = '${cartItem.productId}_${cartItem.size}';
+          if (items.containsKey(itemKey)) {
+            CartItemModel existingItem = CartItemModel.fromJson(items[itemKey]);
             existingItem.quantity += cartItem.quantity;
-            items[cartItem.productId] = existingItem.toJson();
+            items[itemKey] = existingItem.toJson();
           } else {
-            items[cartItem.productId] = cartItem.toJson();
+            items[itemKey] = cartItem.toJson();
           }
           
           transaction.update(cartRef, {'items': items});
@@ -53,7 +56,7 @@ class CartService {
   }
 
   // Remove an item from the cart
-  Future<void> removeFromCart(String userId, String productId) async {
+  Future<void> removeFromCart(String userId, String productId, String size) async {
     try {
       DocumentReference cartRef = _firestore.collection('carts').doc(userId);
       
@@ -64,7 +67,7 @@ class CartService {
           Map<String, dynamic> cartData = cartSnapshot.data() as Map<String, dynamic>;
           Map<String, dynamic> items = Map<String, dynamic>.from(cartData['items'] ?? {});
           
-          items.remove(productId);
+          items.remove('${productId}_$size');
           
           transaction.update(cartRef, {'items': items});
         }
@@ -74,8 +77,7 @@ class CartService {
     }
   }
 
-
-  Future<void> updateCartItemQuantity(String userId, String productId, int newQuantity) async {
+  Future<void> updateCartItemQuantity(String userId, String productId, String size, int newQuantity) async {
     try {
       DocumentReference cartRef = _firestore.collection('carts').doc(userId);
       
@@ -86,10 +88,11 @@ class CartService {
           Map<String, dynamic> cartData = cartSnapshot.data() as Map<String, dynamic>;
           Map<String, dynamic> items = Map<String, dynamic>.from(cartData['items'] ?? {});
           
-          if (items.containsKey(productId)) {
-            CartItemModel item = CartItemModel.fromJson(items[productId]);
+          String itemKey = '${productId}_$size';
+          if (items.containsKey(itemKey)) {
+            CartItemModel item = CartItemModel.fromJson(items[itemKey]);
             item.quantity = newQuantity;
-            items[productId] = item.toJson();
+            items[itemKey] = item.toJson();
             
             transaction.update(cartRef, {'items': items});
           }

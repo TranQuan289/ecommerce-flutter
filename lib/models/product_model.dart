@@ -1,4 +1,3 @@
-
 class ProductModel {
   final String id;
   final String name;
@@ -8,6 +7,7 @@ class ProductModel {
   final String imageUrl;
   final List<String> favoriteUserIds;
   final Map<String, String> comments;
+  final List<String> availableSizes;
 
   ProductModel({
     required this.id,
@@ -18,6 +18,7 @@ class ProductModel {
     required this.imageUrl,
     this.favoriteUserIds = const [],
     this.comments = const {},
+    this.availableSizes = const [],
   });
 
   Map<String, dynamic> toJson() {
@@ -29,6 +30,7 @@ class ProductModel {
       'imageUrl': imageUrl,
       'favoriteUserIds': favoriteUserIds,
       'comments': comments,
+      'availableSizes': availableSizes,
     };
   }
 

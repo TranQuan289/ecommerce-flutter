@@ -22,13 +22,13 @@ class ProductDetailView extends HookWidget {
     final userService = UserService();
     final productService = ProductService();
     final updatedProduct = useState<ProductModel>(product);
+    final selectedSize = useState<String?>(null);
 
     useEffect(() {
       Future<void> fetchData() async {
         String userId = await userService.getCurrentUserId();
         currentUserId.value = userId;
 
-        // Fetch the latest product details including comments
         ProductModel? latestProduct =
             await productService.fetchProductDetails(product.id);
         if (latestProduct != null) {
@@ -83,6 +83,7 @@ class ProductDetailView extends HookWidget {
                     SizedBox(height: 16.h),
                     Row(
                       children: [
+                        Text('Quantity: ', style: TextStyle(fontSize: 16.sp)),
                         IconButton(
                           icon: Icon(Icons.remove),
                           onPressed: () {
@@ -101,21 +102,39 @@ class ProductDetailView extends HookWidget {
                       ],
                     ),
                     SizedBox(height: 16.h),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final cartItem = CartItemModel(
-                          productId: product.id,
-                          quantity: quantity.value,
-                          imageUrl: product.imageUrl,
-                          productName: product.name,
-                          price: product.price,
+                    DropdownButton<String>(
+                      value: selectedSize.value,
+                      hint: Text('Select Size'),
+                      isExpanded: true,
+                      items: updatedProduct.value.availableSizes.map((String size) {
+                        return DropdownMenuItem<String>(
+                          value: size,
+                          child: Text(size),
                         );
-                        await cartService.addOrUpdateCartItem(
-                            currentUserId.value, cartItem);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Added to cart!'),
-                        ));
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        selectedSize.value = newValue;
                       },
+                    ),
+                    SizedBox(height: 16.h),
+                    ElevatedButton(
+                      onPressed: selectedSize.value != null
+                          ? () async {
+                              final cartItem = CartItemModel(
+                                productId: product.id,
+                                quantity: quantity.value,
+                                imageUrl: product.imageUrl,
+                                productName: product.name,
+                                price: product.price,
+                                size: selectedSize.value!,
+                              );
+                              await cartService.addOrUpdateCartItem(
+                                  currentUserId.value, cartItem);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Added to cart!'),
+                              ));
+                            }
+                          : null,
                       child: Text('Add to Cart'),
                     ),
                     SizedBox(height: 16.h),

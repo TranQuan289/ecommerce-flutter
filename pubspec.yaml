@@ -42,12 +42,9 @@ dependencies:
   fluttertoast: ^8.0.2
   http: ^1.2.1
   shared_preferences: ^2.2.2
-  get_it: ^7.7.0
   flutter_screenutil: ^5.9.0
   flutter_svg: ^2.0.10+1
-  chat_bubbles: ^1.6.0
   flutter_hooks: ^0.20.5
-  socket_io_client: ^2.0.3+1
   firebase_core: ^3.3.0
   cloud_firestore: ^5.2.0
   firebase_auth: ^5.1.3

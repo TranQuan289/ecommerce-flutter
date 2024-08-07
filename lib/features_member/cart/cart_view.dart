@@ -26,17 +26,15 @@ class CartView extends HookWidget {
 
     final currentUserId = userService.getCurrentUserId();
 
-    // Create a subject for debouncing
     final updateSubject =
         useMemoized(() => PublishSubject<Map<String, dynamic>>());
 
     useEffect(() {
-      // Set up the debounce
       final subscription = updateSubject
           .debounceTime(const Duration(milliseconds: 500))
           .listen((data) {
         cartService.updateCartItemQuantity(
-            currentUserId, data['productId'], data['quantity']);
+            currentUserId, data['productId'], data['size'], data['quantity']);
       });
 
       return () {
@@ -71,8 +69,8 @@ class CartView extends HookWidget {
     }, []);
 
     void updateQuantity(CartItemModel item, int newQuantity) {
-      final index =
-          cartItems.value.indexWhere((i) => i.productId == item.productId);
+      final index = cartItems.value.indexWhere(
+          (i) => i.productId == item.productId && i.size == item.size);
       if (index != -1) {
         final updatedItem = CartItemModel(
           productId: item.productId,
@@ -80,14 +78,17 @@ class CartView extends HookWidget {
           price: item.price,
           productName: item.productName,
           imageUrl: item.imageUrl,
+          size: item.size,
         );
         cartItems.value[index] = updatedItem;
         cartItems.value = List.from(cartItems.value);
         calculateTotalAmount();
 
-        // Add to subject instead of calling API directly
-        updateSubject
-            .add({'productId': item.productId, 'quantity': newQuantity});
+        updateSubject.add({
+          'productId': item.productId,
+          'size': item.size,
+          'quantity': newQuantity
+        });
       }
     }
 
@@ -185,6 +186,10 @@ class CartView extends HookWidget {
                                           style: TextStyle(fontSize: 16.sp),
                                         ),
                                         Text(
+                                          'Size: ${item.size}',
+                                          style: TextStyle(fontSize: 16.sp),
+                                        ),
+                                        Text(
                                           'Quantity: ${item.quantity}',
                                           style: TextStyle(fontSize: 16.sp),
                                         ),
@@ -216,7 +221,9 @@ class CartView extends HookWidget {
                                             color: Colors.black),
                                         onPressed: () async {
                                           await cartService.removeFromCart(
-                                              currentUserId, item.productId);
+                                              currentUserId,
+                                              item.productId,
+                                              item.size);
                                           cartItems.value.removeAt(index);
                                           cartItems.value =
                                               List.from(cartItems.value);
